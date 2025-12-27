@@ -6,6 +6,11 @@
     font-family: 'Roboto', sans-serif;
 }
 
+body {
+    background-color: black;
+    color: white;
+}
+
 .left {
     width: 25vw;
     padding: 10px;
@@ -40,13 +45,16 @@
 }
 
 .library {
-    min-height: 50vh;
+    min-height: 80vh;
+    position: relative;
 }
 
 .footer {
     display: flex;
     font-size: 10px;
     gap: 13px;
+    position: absolute;
+    bottom: 0;
 }
 
 .footer a {
