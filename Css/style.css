@@ -169,6 +169,7 @@ body {
     display: flex;
     justify-content: center;
     gap: 16px;
+    cursor: pointer;
 }
 
 .songList {
@@ -219,6 +220,7 @@ body {
     position: absolute;
     bottom: 0;
     margin: 6px;
+    cursor: pointer;
 }
 
 .circle {
@@ -230,4 +232,15 @@ body {
     bottom: 6px;
     left: 0%;
     transition: left 0.5s;
+}
+
+.abovebar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+}
+
+.songinfo, .songtime {
+    color: black;
+    padding: 0 12px;
 }
