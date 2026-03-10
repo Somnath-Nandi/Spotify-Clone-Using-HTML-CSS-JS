@@ -2,10 +2,11 @@ console.log("Script.js Initializing...");
 
 let currentSong = new Audio();
 const play = document.getElementById("play");
+let currfolder
 
-async function getSongs() {
-
-    let a = await fetch("http://127.0.0.1:3000/songs/")
+async function getSongs(folder) {
+    currfolder = folder
+    let a = await fetch(`http://127.0.0.1:3000/${currfolder}/`)
     let response = await a.text()
     let div = document.createElement("div")
     div.innerHTML = response
@@ -14,7 +15,6 @@ async function getSongs() {
     for (let index = 0; index < as.length; index++) {
         const element = as[index];
         if (element.href.endsWith(".mp3")) {
-            // Store the full absolute href returned by the server
             songs.push(element.href)
         }
     }
@@ -22,7 +22,7 @@ async function getSongs() {
 }
 
 const playMusic = (track, pause=false) => {
-    // `track` is now the full audio URL returned by the server; use it directly
+    
     currentSong.src = track
     if(!pause) {
         currentSong.play()
@@ -63,7 +63,7 @@ async function main() {
 
     //Get the list of all the songs
 
-    let songs = await getSongs()
+    let songs = await getSongs("songs/ncs")
     playMusic(songs[0], true) // Preload the first song without playing it
 
     // Show all the songs in the playlist
@@ -110,6 +110,37 @@ async function main() {
             currentSong.pause()
             play.src = "img/play.svg"
         }
+    })
+
+    // Add event listener for hamburger menu toggle
+    document.querySelector(".hamburger").addEventListener("click", () => {
+        document.querySelector(".left").style.left = "0"
+    })
+
+    // Add event listener for close button in the sidebar
+    document.querySelector(".close").addEventListener("click", () => {
+        document.querySelector(".left").style.left = "-120%"
+    })
+
+    // Add event listeners for next and previous buttons
+
+    previous.addEventListener("click", () => {
+        let currentIndex = songs.indexOf(currentSong.src)
+        if (currentIndex > 0) {
+            playMusic(songs[currentIndex - 1])
+        }
+    })
+
+    next.addEventListener("click", () => {
+        let currentIndex = songs.indexOf(currentSong.src)
+        if (currentIndex < songs.length - 1) {
+            playMusic(songs[currentIndex + 1])
+        }
+    }) 
+
+    // Add event listener for volume control
+    document.querySelector(".range").getElementsByTagName("input")[0].addEventListener("input", (e) => {
+        currentSong.volume = e.currentTarget.value / 100
     })
 
 }
