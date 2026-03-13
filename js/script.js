@@ -3,7 +3,7 @@ console.log("Script.js Initializing...");
 let currentSong = new Audio();
 const play = document.getElementById("play");
 let currfolder
-
+let songs
 async function getSongs(folder) {
     currfolder = folder
     let a = await fetch(`http://127.0.0.1:3000/${currfolder}/`)
@@ -11,20 +11,54 @@ async function getSongs(folder) {
     let div = document.createElement("div")
     div.innerHTML = response
     let as = div.getElementsByTagName("a")
-    let songs = []
+    songs = []
     for (let index = 0; index < as.length; index++) {
         const element = as[index];
         if (element.href.endsWith(".mp3")) {
             songs.push(element.href)
         }
     }
-    return songs
+
+    // Show all the songs in the playlist
+
+    let songUL = document.querySelector(".songList").getElementsByTagName("ul")[0]
+    songUL.innerHTML = ""
+    for (const song of songs) {
+        // `song` is the full href; compute a cleaned display title and store href in data-src
+        let displayTitle = song
+        try {
+            const raw = new URL(song).pathname.split('/').pop() || ''
+            displayTitle = decodeURIComponent(raw).replace(/\.mp3$/i, '').replace(/[-_]+/g, ' ')
+        } catch (err) {
+            displayTitle = song.replace(/\.mp3$/i, '')
+        }
+
+        songUL.innerHTML = songUL.innerHTML + `<li data-src="${song}"><img class="invert" src="/img/music.svg" alt="">
+                            <div class="info">
+                                <div>${displayTitle}</div>
+                                <div>Shaan</div>
+                            </div>
+                            <div class="playnow">
+                                <span>Play Now</span>
+                                <img class="invert" src="img/play.svg" alt="">
+                            </div></li>`
+    }
+
+    // Attach an event listener to each song
+
+    Array.from(document.querySelector(".songList").getElementsByTagName("li")).forEach(e => {
+        e.addEventListener("click", () => {
+            const trackUrl = e.getAttribute('data-src')
+            console.log('Playing track URL:', trackUrl)
+            if (trackUrl) playMusic(trackUrl)
+        })
+    })
 }
 
-const playMusic = (track, pause=false) => {
-    
+const playMusic = (track, pause = false) => {
+
     currentSong.src = track
-    if(!pause) {
+    if (!pause) {
         currentSong.play()
         play.src = "img/pause.svg"
     }
@@ -63,46 +97,14 @@ async function main() {
 
     //Get the list of all the songs
 
-    let songs = await getSongs("songs/ncs")
+    await getSongs("songs/ncs")
     playMusic(songs[0], true) // Preload the first song without playing it
 
-    // Show all the songs in the playlist
-
-    let songUL = document.querySelector(".songList").getElementsByTagName("ul")[0]
-    for (const song of songs) {
-        // `song` is the full href; compute a cleaned display title and store href in data-src
-        let displayTitle = song
-        try {
-            const raw = new URL(song).pathname.split('/').pop() || ''
-            displayTitle = decodeURIComponent(raw).replace(/\.mp3$/i, '').replace(/[-_]+/g, ' ')
-        } catch (err) {
-            displayTitle = song.replace(/\.mp3$/i, '')
-        }
-
-        songUL.innerHTML = songUL.innerHTML + `<li data-src="${song}"><img class="invert" src="/img/music.svg" alt="">
-                            <div class="info">
-                                <div>${displayTitle}</div>
-                                <div>Shaan</div>
-                            </div>
-                            <div class="playnow">
-                                <span>Play Now</span>
-                                <img class="invert" src="img/play.svg" alt="">
-                            </div></li>`
-    }
-
-    // Attach an event listener to each song
-
-    Array.from(document.querySelector(".songList").getElementsByTagName("li")).forEach(e=> {
-        e.addEventListener("click", () => {
-            const trackUrl = e.getAttribute('data-src')
-            console.log('Playing track URL:', trackUrl)
-            if (trackUrl) playMusic(trackUrl)
-        })
-    })
+    
 
     // Attach event listeners to the play, next and previous buttons
 
-     play.addEventListener("click", () => {
+    play.addEventListener("click", () => {
         if (currentSong.paused) {
             currentSong.play()
             play.src = "img/pause.svg"
@@ -136,11 +138,18 @@ async function main() {
         if (currentIndex < songs.length - 1) {
             playMusic(songs[currentIndex + 1])
         }
-    }) 
+    })
 
     // Add event listener for volume control
     document.querySelector(".range").getElementsByTagName("input")[0].addEventListener("input", (e) => {
         currentSong.volume = e.currentTarget.value / 100
+    })
+
+    // Load the playlist whenever card is clicked
+    Array.from(document.getElementsByClassName("card")).forEach(e => {
+        e.addEventListener("click", async item => {
+            songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`)
+        })
     })
 
 }
